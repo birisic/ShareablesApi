@@ -14,7 +14,7 @@ namespace DataAccess.Configurations
     {
         public virtual void Configure(EntityTypeBuilder<T> builder)
         {
-            builder.Property(x => x.CreatedAt).HasDefaultValue("GETDATE()");
+            builder.Property(x => x.CreatedAt).HasDefaultValueSql("GETDATE()");
 
             ConfigureEntity(builder);
         }

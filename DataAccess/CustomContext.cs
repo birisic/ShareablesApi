@@ -1,5 +1,7 @@
 ﻿using Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Reflection.Metadata;
 //using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace DataAccess
@@ -29,9 +31,51 @@ namespace DataAccess
             modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);
 
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<UserWorkspace>()
+                        .HasKey(uw => new { uw.UserId, uw.WorkspaceId, uw.UseCaseId });
+
+            modelBuilder.Entity<LinkAccessLog>()
+                .HasOne(e => e.Link)
+                .WithOne(e => e.AccessLog)
+                .IsRequired();
         }
 
-        //DB Sets
+        public override int SaveChanges()
+        {
+            IEnumerable<EntityEntry> entries = this.ChangeTracker.Entries();
+
+            foreach (EntityEntry entry in entries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    if (entry.Entity is Entity e)
+                    {
+                        e.DeletedAt = null;
+                        e.CreatedAt = DateTime.UtcNow;
+                    }
+                }
+
+                if (entry.State == EntityState.Modified)
+                {
+                    if (entry.Entity is Entity e)
+                    {
+                        e.UpdatedAt = DateTime.UtcNow;
+                    }
+                }
+            }
+
+            return base.SaveChanges();
+        }
+
+
         public DbSet<User> Users { get; set; }
+        public DbSet<Media> Media { get; set; }
+        public DbSet<ErrorLog> ErrorLogs { get; set; }
+        public DbSet<UseCaseLog> UseCaseLogs { get; set; }
+        public DbSet<Workspace> Workspaces { get; set; }
+        public DbSet<UserWorkspace> UsersWorkspaces { get; set; }
+        public DbSet<Link> Links { get; set; }
+        public DbSet<LinkAccessLog> LinksAccessLogs { get; set; }
     }
 }

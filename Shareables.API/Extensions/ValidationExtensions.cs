@@ -2,7 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AspYt.API.Extensions
+namespace Shareables.API.Extensions
 {
     public static class ValidationExtensions
     {
