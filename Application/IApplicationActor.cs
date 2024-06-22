@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Application.DTO.Workspace;
+using Domain;
+using System.Collections.Generic;
 
 namespace Application
 {
@@ -6,6 +8,6 @@ namespace Application
     {
         int Id { get; }
         string Username { get; }
-        IEnumerable<int> AllowedUseCases { get; }
+        IEnumerable<WorkspaceUseCases> WorkspacesUseCases { get; }
     }
 }

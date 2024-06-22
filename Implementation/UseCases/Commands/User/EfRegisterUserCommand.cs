@@ -4,13 +4,14 @@ using Application.DTO.User;
 using DataAccess;
 using Implementation.Validators.User;
 using FluentValidation;
+using Application;
 
 namespace Implementation.UseCases.Commands.User
 {
     public class EfRegisterUserCommand : EfUseCase, IRegisterUserCommand
     {
-        public int Id => 1;
-        public string Name => "UserRegistration";
+        public int Id => (int)UseCasesEnum.UserRegistration;
+        public UseCasesEnum Name => UseCasesEnum.UserRegistration;
 
         private RegisterUserDtoValidator _validator;
 
@@ -20,7 +21,7 @@ namespace Implementation.UseCases.Commands.User
             _validator = validator;
         }
 
-        public void Execute(RegisterUserDto data)
+        public void Execute(UserAuthRequestDto data)
         {
             _validator.ValidateAndThrow(data);
 
@@ -33,9 +34,9 @@ namespace Implementation.UseCases.Commands.User
                 Workspaces = new List<Workspace> { workspace },
                 UsersWorkspaces = new List<UserWorkspace>()
                 {
-                    new UserWorkspace { Workspace = workspace, UseCaseId = 3 },
-                    new UserWorkspace { Workspace = workspace, UseCaseId = 4 },
-                    new UserWorkspace { Workspace = workspace, UseCaseId = 5 }
+                    new UserWorkspace { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceRetrieval },
+                    new UserWorkspace { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceCreation },
+                    new UserWorkspace { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceModification }
                 }
             };
 

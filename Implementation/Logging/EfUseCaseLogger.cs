@@ -25,7 +25,6 @@ namespace Implementation.Logging
             });
 
             _context.SaveChanges();
-
         }
     }
 }

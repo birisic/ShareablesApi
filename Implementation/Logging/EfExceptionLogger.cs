@@ -21,12 +21,12 @@ namespace Implementation.Logging
 
         public Guid Log(Exception ex, IApplicationActor actor)
         {
-            Guid id = Guid.NewGuid();
+            Guid errorLogId = Guid.NewGuid();
 
             //ID, Message, Time, StrackTrace
             ErrorLog log = new()
             {
-                ErrorId = id,
+                ErrorId = errorLogId,
                 Message = ex.Message,
                 StackTrace = ex.StackTrace,
                 OccurredAt = DateTime.UtcNow
@@ -36,7 +36,7 @@ namespace Implementation.Logging
 
             _context.SaveChanges();
 
-            return id;
+            return errorLogId;
         }
     }
 

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Application.DTO.User
 {
-    public class RegisterUserDto
+    public class UserAuthRequestDto
     {
         public string Username { get; set; }
         public string Password { get; set; }

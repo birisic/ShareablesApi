@@ -23,13 +23,22 @@ namespace Shareables.API.Core
         public string Create(string username, string password)
         {
             var user = _context.Users
-            .Where(x => x.Username == username)
+            .Where(x => x.Username == username && x.DeletedAt == null)
             .Select(x => new
             {
+                x.Id,
                 x.Username,
                 x.Password,
-                x.Id,
-                UseCaseIds = x.UsersWorkspaces.Select(uw => uw.UseCaseId)
+                Workspaces = x.UsersWorkspaces
+                            .GroupBy(uw => uw.WorkspaceId)
+                            .Select(g => new
+                            {
+                                WorkspaceId = g.Key,
+                                UseCaseIds = g.Select(uw => uw.UseCaseId)
+                                                .Distinct()
+                                                .ToList()
+                            })
+                            .ToList()
             })
             .FirstOrDefault();
 
@@ -54,7 +63,7 @@ namespace Shareables.API.Core
                  new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
                  new Claim("Username", user.Username),
                  new Claim("Id", user.Id.ToString()),
-                 new Claim("UseCaseIds", JsonConvert.SerializeObject(user.UseCaseIds)),
+                 new Claim("Workspaces", JsonConvert.SerializeObject(user.Workspaces)),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecretKey));

@@ -18,6 +18,7 @@ namespace Shareables.API.Core
             services.AddTransient<IRegisterUserCommand, EfRegisterUserCommand>();
             services.AddTransient<IUseCaseLogger, EfUseCaseLogger>();
             services.AddTransient<RegisterUserDtoValidator>();
+            services.AddTransient<LoginRequestDtoValidator>();
         }
 
         public static Guid? GetTokenId(this HttpRequest request)

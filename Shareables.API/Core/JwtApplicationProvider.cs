@@ -1,4 +1,6 @@
 ﻿using Application;
+using Application.DTO.Workspace;
+using Domain;
 using Implementation;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
@@ -35,7 +37,7 @@ namespace Shareables.API.Core
             {
                 Username = claims.First(x => x.Type == "Username").Value,
                 Id = int.Parse(claims.First(x => x.Type == "Id").Value),
-                AllowedUseCases = JsonConvert.DeserializeObject<List<int>>(claims.First(x => x.Type == "UseCaseIds").Value)
+                WorkspacesUseCases = JsonConvert.DeserializeObject<List<WorkspaceUseCases>>(claims.First(x => x.Type == "Workspaces").Value)
             };
 
             return actor;

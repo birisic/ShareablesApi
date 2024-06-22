@@ -37,17 +37,20 @@ namespace Implementation
         private void HandleCrossCuttingConcerns(IUseCase useCase, object data)
         {
             //Autorizacija
-            if (!_actor.AllowedUseCases.Contains(useCase.Id))
+            if (!_actor.WorkspacesUseCases.Any(wus => wus.UseCaseIds.Contains(useCase.Id)))
             {
                 throw new UnauthorizedAccessException();
             }
 
-            _logger.Log(new UseCaseLogDto
+            if (useCase.Name != UseCasesEnum.UserRegistration)
             {
-                UseCaseData = data,
-                UseCaseName = useCase.Name,
-                Username = _actor.Username,
-            });
+                _logger.Log(new UseCaseLogDto
+                {
+                    UseCaseData = data,
+                    UseCaseName = useCase.Name.ToString(),
+                    Username = _actor.Username,
+                });
+            }
         }
     }
 
