@@ -37,7 +37,7 @@ builder.Services.AddUseCases();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddTransient<IExceptionLogger, DbExceptionLogger>();
+builder.Services.AddTransient<IExceptionLogger, EfExceptionLogger>();
 builder.Services.AddTransient<ITokenStorage, InMemoryTokenStorage>();
 
 builder.Services.AddTransient<IApplicationActorProvider>(x =>

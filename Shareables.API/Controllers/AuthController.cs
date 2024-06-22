@@ -17,6 +17,8 @@ namespace Shareables.API.Controllers
             _tokenCreator = tokenCreator;
         }
 
+        //Login route (adds the token to storage and returns it)
+        //POST /api/auth
         [HttpPost]
         public IActionResult Post([FromBody] AuthRequestDto request)
         {
@@ -25,6 +27,8 @@ namespace Shareables.API.Controllers
             return Ok(new AuthResponseDto { Token = token });
         }
 
+        //Logout route (removes the token from storage)
+        //DELETE /api/auth
         [Authorize]
         [HttpDelete]
         public IActionResult Delete([FromServices] ITokenStorage storage)

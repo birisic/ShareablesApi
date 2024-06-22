@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace Implementation.Logging
 {
-    public class DbExceptionLogger : IExceptionLogger
+    public class EfExceptionLogger : IExceptionLogger
     {
         private readonly CustomContext _context;
 
-        public DbExceptionLogger(CustomContext context)
+        public EfExceptionLogger(CustomContext context)
         {
             _context = context;
         }

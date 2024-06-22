@@ -12,7 +12,6 @@ namespace Implementation.Logging
         public EfUseCaseLogger(CustomContext ctx) => _context = ctx; 
         public void Log(UseCaseLogDto log)
         {
-            DateTime date = DateTime.UtcNow;
             string username = log.Username;
             string useCase = log.UseCaseName;
             string useCaseData = JsonConvert.SerializeObject(log.UseCaseData);

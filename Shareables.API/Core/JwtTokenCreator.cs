@@ -22,13 +22,16 @@ namespace Shareables.API.Core
 
         public string Create(string username, string password)
         {
-            var user = _context.Users.Where(x => x.Username == username).Select(x => new
+            var user = _context.Users
+            .Where(x => x.Username == username)
+            .Select(x => new
             {
                 x.Username,
                 x.Password,
                 x.Id,
-                UseCaseIds = x.UseCases.Select(x => x.UseCaseId)
-            }).FirstOrDefault();
+                UseCaseIds = x.UsersWorkspaces.Select(uw => uw.UseCaseId)
+            })
+            .FirstOrDefault();
 
             if (user == null)
             {

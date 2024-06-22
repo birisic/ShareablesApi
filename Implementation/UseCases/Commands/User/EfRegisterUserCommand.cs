@@ -9,7 +9,7 @@ namespace Implementation.UseCases.Commands.User
 {
     public class EfRegisterUserCommand : EfUseCase, IRegisterUserCommand
     {
-        public int Id => 2;
+        public int Id => 1;
         public string Name => "UserRegistration";
 
         private RegisterUserDtoValidator _validator;
@@ -24,14 +24,18 @@ namespace Implementation.UseCases.Commands.User
         {
             _validator.ValidateAndThrow(data);
 
+            Workspace workspace = new Workspace();
+
             Domain.User user = new Domain.User
             {
                 Password = BCrypt.Net.BCrypt.HashPassword(data.Password),
                 Username = data.Username,
-                UseCases = new List<UserUseCase>()
+                Workspaces = new List<Workspace> { workspace },
+                UsersWorkspaces = new List<UserWorkspace>()
                 {
-                    new UserUseCase { UseCaseId = 3 },
-                    new UserUseCase { UseCaseId = 5 }
+                    new UserWorkspace { Workspace = workspace, UseCaseId = 3 },
+                    new UserWorkspace { Workspace = workspace, UseCaseId = 4 },
+                    new UserWorkspace { Workspace = workspace, UseCaseId = 5 }
                 }
             };
 
