@@ -31,6 +31,28 @@ namespace Shareables.API.Controllers
             return StatusCode(201);
         }
 
+
+        //Update/Store usecases route 
+        //POST api/users/usecases
+        [HttpPost("usecases")]
+        public IActionResult UpdateUseCase([FromBody] UserWorkspaceUseCaseDto dto, [FromServices] IUpdateUserWorkspaceUseCaseCommand cmd)
+        {
+            _useCaseHandler.HandleCommand(cmd, dto);
+
+            if (dto.Action == UseCaseAction.Store.ToString())
+            {
+                return StatusCode(201);
+            }
+
+            if (dto.Action == UseCaseAction.Delete.ToString())
+            {
+                return NoContent();
+            }
+
+            return Ok();
+        }
+
+
         //Test route 
         //GET api/users
         [Authorize]

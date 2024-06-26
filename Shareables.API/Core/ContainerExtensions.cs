@@ -27,13 +27,13 @@ namespace Shareables.API.Core
             //commands
             services.AddTransient<IRegisterUserCommand, EfRegisterUserCommand>();
             services.AddTransient<ICreateWorkspaceCommand, EfCreateWorkspaceCommand>();
-            //services.AddTransient<IUpdateUseAccessCommand, EfUpdateUserAccessCommand>();
+            services.AddTransient<IUpdateUserWorkspaceUseCaseCommand, EfUpdateUserWorkspaceUseCaseCommand>();
 
             //validators
             services.AddTransient<WorkspaceValidator>();
             services.AddTransient<RegisterUserDtoValidator>();
             services.AddTransient<LoginRequestDtoValidator>();
-            //services.AddTransient<UpdateUserAccessDtoValidator>();
+            services.AddTransient<UpdateUserWorkspaceUseCaseValidator>();
         }
 
         public static Guid? GetTokenId(this HttpRequest request)

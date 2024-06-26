@@ -36,7 +36,8 @@ namespace Implementation.UseCases.Commands.User
                 {
                     new UserWorkspace { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceRetrieval },
                     new UserWorkspace { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceCreation },
-                    new UserWorkspace { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceModification }
+                    new UserWorkspace { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceModification },
+                    new UserWorkspace { Workspace = workspace, UseCaseId = (int)UseCasesEnum.UserWorkspaceUseCaseModification }
                 }
             };
 
