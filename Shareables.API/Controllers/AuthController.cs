@@ -24,6 +24,7 @@ namespace Shareables.API.Controllers
             _loginValidator = loginValidator;
             _tokenCreator = tokenCreator;
         }
+
         //Login route (adds the token to storage and returns it)
         //POST /api/auth
         [HttpPost]
@@ -41,7 +42,6 @@ namespace Shareables.API.Controllers
         [HttpDelete]
         public IActionResult Delete([FromServices] ITokenStorage storage)
         {
-            //validate data
             storage.Remove(this.Request.GetTokenId().Value);
 
             return NoContent();

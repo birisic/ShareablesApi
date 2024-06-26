@@ -2,6 +2,7 @@
 using Application.DTO.User;
 using Application.UseCases.Commands.User;
 using Implementation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,8 +31,9 @@ namespace Shareables.API.Controllers
             return StatusCode(201);
         }
 
-        //Test route
+        //Test route 
         //GET api/users
+        [Authorize]
         [HttpGet]
         public IActionResult Get()
         {

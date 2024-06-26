@@ -55,6 +55,15 @@ namespace Shareables.API.Core
                     return;
                 }
 
+                if (exception is ArgumentException a)
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    var body = new { error = a.Message };
+
+                    await httpContext.Response.WriteAsJsonAsync(body);
+                    return;
+                }
+
                 var errorId = _logger.Log(exception, _actor);
 
                 httpContext.Response.StatusCode = 500;

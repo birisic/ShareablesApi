@@ -25,13 +25,13 @@ namespace Implementation.UseCases.Commands.User
         {
             _validator.ValidateAndThrow(data);
 
-            Workspace workspace = new Workspace();
+            Domain.Workspace workspace = new Domain.Workspace();
 
             Domain.User user = new Domain.User
             {
                 Password = BCrypt.Net.BCrypt.HashPassword(data.Password),
                 Username = data.Username,
-                Workspaces = new List<Workspace> { workspace },
+                Workspaces = new List<Domain.Workspace> { workspace },
                 UsersWorkspaces = new List<UserWorkspace>()
                 {
                     new UserWorkspace { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceRetrieval },
