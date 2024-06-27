@@ -5,10 +5,12 @@ using DataAccess;
 using Domain;
 using FluentValidation;
 using Implementation.Validators.Workspace;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Implementation.UseCases.Commands.Workspace
@@ -17,36 +19,52 @@ namespace Implementation.UseCases.Commands.Workspace
     {
         public int Id => (int) UseCasesEnum.WorkspaceCreation;
         public UseCasesEnum Name => UseCasesEnum.WorkspaceCreation;
-        public WorkspaceValidator _validator;
+        public WorkspaceDtoValidator _validator;
         public IApplicationActor _actor { get; set; }
 
-        public EfCreateWorkspaceCommand(CustomContext context, WorkspaceValidator validator, IApplicationActor actor) : base(context) 
+        public EfCreateWorkspaceCommand(CustomContext context, IApplicationActor actor, WorkspaceDtoValidator validator) : base(context)
         {
-            _validator = validator;
             _actor = actor;
+            _validator = validator;
+            _validator.UseCase = Name;
         }
 
         public void Execute(WorkspaceDto dto)
         {
-            _validator.ValidateAndThrow(dto); 
+            _validator.ValidateAndThrow(dto);
 
-            WorkspaceType workspaceType;
+            WorkspaceType workspaceType = Enum.Parse<WorkspaceType>(dto.Type);
 
-            if (!Enum.TryParse(dto.Type, true, out workspaceType))
+            this.ValidateWorkspaceName(dto, Context, workspaceType);
+
+            Domain.User user = Context.Users.FirstOrDefault(u => u.Username == _actor.Username);
+
+            if (user != null)
             {
-                throw new ArgumentException("Invalid workspace type provided.");
+                Domain.Workspace workspace = new Domain.Workspace
+                {
+                    Name = dto.Name,
+                    Type = workspaceType,
+                    Contents = dto.Contents,
+                    OwnerId = _actor.Id,
+                    ParentId = dto.ParentId,
+                    UsersWorkspaces = new List<UserWorkspace>()
+                    {
+                        new UserWorkspace { User = user, UseCaseId = (int)UseCasesEnum.WorkspaceRetrieval },
+                        new UserWorkspace { User = user, UseCaseId = (int)UseCasesEnum.WorkspaceModification },
+                        new UserWorkspace { User = user, UseCaseId = (int)UseCasesEnum.UserWorkspaceUseCaseModification }
+                    }
+                };
+
+                if (workspace.Type == WorkspaceType.Directory)
+                {
+                    workspace.UsersWorkspaces.Add(new UserWorkspace
+                    { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceCreation });
+                }
+                Context.Workspaces.Add(workspace);
+
+                Context.SaveChanges();
             }
-
-            Context.Workspaces.Add(new Domain.Workspace
-            {
-                Name = dto.Name,
-                Type = workspaceType,
-                Contents = dto.Contents,
-                OwnerId = _actor.Id,
-                ParentId = dto.ParentId,
-            });
-
-            Context.SaveChanges();
         }
     }
 }

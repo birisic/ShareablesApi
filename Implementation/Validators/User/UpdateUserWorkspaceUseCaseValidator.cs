@@ -8,14 +8,8 @@ namespace Implementation.Validators.User
 {
     public class UpdateUserWorkspaceUseCaseValidator : AbstractValidator<UserWorkspaceUseCaseDto>
     {
-        private readonly CustomContext _context;
-        private readonly IApplicationActor _actor;
-
         public UpdateUserWorkspaceUseCaseValidator(CustomContext context, IApplicationActor actor)
         {
-            _context = context;
-            _actor = actor;
-
             /*
              * Validation checks:
              * 1. Ensure the actor has the UserWorkspaceUseCaseModification use case for the workspace.

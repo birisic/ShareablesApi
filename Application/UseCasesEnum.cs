@@ -2,7 +2,7 @@
 {
     public enum UseCasesEnum
     {
-        UserRegistration = 1,
+        UserRegistration = 1, //create user
         WorkspaceDeletion = 2, //delete workspace
         WorkspaceRetrieval = 3, //read workspace
         WorkspaceCreation = 4, //create workspace

@@ -28,9 +28,10 @@ namespace Shareables.API.Core
             services.AddTransient<IRegisterUserCommand, EfRegisterUserCommand>();
             services.AddTransient<ICreateWorkspaceCommand, EfCreateWorkspaceCommand>();
             services.AddTransient<IUpdateUserWorkspaceUseCaseCommand, EfUpdateUserWorkspaceUseCaseCommand>();
+            services.AddTransient<IUpdateWorkspaceCommand, EfUpdateWorkspaceCommand>();
 
             //validators
-            services.AddTransient<WorkspaceValidator>();
+            services.AddTransient<WorkspaceDtoValidator>();
             services.AddTransient<RegisterUserDtoValidator>();
             services.AddTransient<LoginRequestDtoValidator>();
             services.AddTransient<UpdateUserWorkspaceUseCaseValidator>();

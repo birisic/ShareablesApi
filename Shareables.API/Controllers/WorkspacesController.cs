@@ -3,8 +3,8 @@ using Application.UseCases.Commands.Workspace;
 using Application.UseCases.Queries.User;
 using Implementation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Shareables.API.Controllers
 {
@@ -29,9 +29,9 @@ namespace Shareables.API.Controllers
         // POST /api/workspaces
         [Authorize]
         [HttpPost]
-        public IActionResult Post([FromBody] WorkspaceDto data, [FromServices] ICreateWorkspaceCommand cmd) 
+        public IActionResult Post([FromBody] WorkspaceDto dto, [FromServices] ICreateWorkspaceCommand cmd) 
         {
-            _useCaseHandler.HandleCommand(cmd, data);
+            _useCaseHandler.HandleCommand(cmd, dto);
             return StatusCode(201); 
         }
 
@@ -39,8 +39,12 @@ namespace Shareables.API.Controllers
         // PUT /api/workspaces/3
         [Authorize]
         [HttpPut("{id}")]
-        public IActionResult Put(int id) { return Ok(); }
-
+        public IActionResult Put(int id, [FromBody] WorkspaceDto dto, [FromServices] IUpdateWorkspaceCommand cmd) 
+        {
+            dto.Id = id;
+            _useCaseHandler.HandleCommand(cmd, dto);
+            return NoContent();
+        }
 
         // Delete Workspace Route
         // DELETE /api/workspaces/3
