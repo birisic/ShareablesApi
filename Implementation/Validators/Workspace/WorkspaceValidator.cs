@@ -18,7 +18,6 @@ namespace Implementation.Validators.Workspace
          *  - contents - nullable
          *  - parentId - nullable, > 0, if parentID does exist in the database and if the actor has the usecaseID 4 (WorkspaceCreation)
          *  AND if the actor has the "WorkspaceRetrieval" usecase for all ancestor workspaces of its parent workspace
-         * insert into the database
          */
 
         public WorkspaceValidator(CustomContext context, IApplicationActor actor) 
@@ -96,15 +95,29 @@ namespace Implementation.Validators.Workspace
 
         public bool DoAncestorWorkspacesHaveRetrieavalUsecase(Domain.Workspace parentWorkspace)
         {
+            var actorWorkspaces = _actor.WorkspacesUseCases;
+            var actorWorkspacesIds = actorWorkspaces.Select(wus => wus.WorkspaceId);
+            var ancestorWorkspaces = _context.Workspaces.Where(w => actorWorkspacesIds.Contains(w.Id))
+                                                        .Select(w => new Domain.Workspace
+                                                        {
+                                                            Name = w.Name,
+                                                            Type = w.Type,
+                                                            Contents = w.Contents,
+                                                            OwnerId = w.OwnerId,
+                                                            ParentId = w.ParentId
+                                                        })
+                                                        .ToList();
+            //actorWorkspaces.Where(wus => wus.WorkspaceId == w.Id).Select(wus => wus.WorkspaceId).First()
+
             while (parentWorkspace != null)
             {
-                bool hasWorkspaceRetrievalUseCase = _actor.WorkspacesUseCases.Any(wus =>
+                bool hasWorkspaceRetrievalUseCase = actorWorkspaces.Any(wus =>
                     wus.WorkspaceId == parentWorkspace.Id &&
                     wus.UseCaseIds.Contains((int)UseCasesEnum.WorkspaceRetrieval));
 
                 if (!hasWorkspaceRetrievalUseCase) return false;
 
-                parentWorkspace = _context.Workspaces.FirstOrDefault(w => w.Id == parentWorkspace.ParentId);
+                parentWorkspace = ancestorWorkspaces.FirstOrDefault(w => w.Id == parentWorkspace.ParentId);
             }
 
             return true;
