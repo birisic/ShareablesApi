@@ -35,13 +35,13 @@ namespace Implementation.UseCases.Commands.Workspace
 
             WorkspaceType workspaceType = Enum.Parse<WorkspaceType>(dto.Type);
 
-            this.ValidateWorkspaceName(dto, Context, workspaceType);
+            dto.ValidateWorkspaceName(Context, workspaceType);
 
             Domain.User user = Context.Users.FirstOrDefault(u => u.Username == _actor.Username);
 
             if (user != null)
             {
-                Domain.Workspace workspace = new Domain.Workspace
+                Domain.Workspace workspace = new()
                 {
                     Name = dto.Name,
                     Type = workspaceType,
@@ -52,6 +52,7 @@ namespace Implementation.UseCases.Commands.Workspace
                     {
                         new UserWorkspace { User = user, UseCaseId = (int)UseCasesEnum.WorkspaceRetrieval },
                         new UserWorkspace { User = user, UseCaseId = (int)UseCasesEnum.WorkspaceModification },
+                        new UserWorkspace { User = user, UseCaseId = (int)UseCasesEnum.WorkspaceDeletion },
                         new UserWorkspace { User = user, UseCaseId = (int)UseCasesEnum.UserWorkspaceUseCaseModification }
                     }
                 };
@@ -59,7 +60,7 @@ namespace Implementation.UseCases.Commands.Workspace
                 if (workspace.Type == WorkspaceType.Directory)
                 {
                     workspace.UsersWorkspaces.Add(new UserWorkspace
-                    { Workspace = workspace, UseCaseId = (int)UseCasesEnum.WorkspaceCreation });
+                    { User = user, UseCaseId = (int)UseCasesEnum.WorkspaceCreation });
                 }
                 Context.Workspaces.Add(workspace);
 

@@ -5,12 +5,6 @@ using DataAccess;
 using Domain;
 using FluentValidation;
 using Implementation.Validators.Workspace;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Implementation.UseCases.Commands.Workspace
 {
@@ -35,7 +29,7 @@ namespace Implementation.UseCases.Commands.Workspace
 
             WorkspaceType workspaceType = Enum.Parse<WorkspaceType>(dto.Type);
 
-            this.ValidateWorkspaceName(dto, Context, workspaceType);
+            dto.ValidateWorkspaceName(Context, workspaceType);
 
             var workspaceToUpdate = Context.Workspaces.FirstOrDefault(w => w.Id == dto.Id);
 

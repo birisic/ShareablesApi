@@ -25,9 +25,9 @@ namespace Implementation.UseCases.Commands.User
         {
             _validator.ValidateAndThrow(data);
 
-            Domain.Workspace workspace = new Domain.Workspace();
+            Domain.Workspace workspace = new();
 
-            Domain.User user = new Domain.User
+            Domain.User user = new()
             {
                 Password = BCrypt.Net.BCrypt.HashPassword(data.Password),
                 Username = data.Username,
