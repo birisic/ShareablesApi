@@ -25,6 +25,7 @@ namespace Shareables.API.Controllers
         public IActionResult Get(int id, [FromServices] IGetWorkspaceQuery query) 
             => Ok(_useCaseHandler.HandleQuery(query, id));
 
+
         // Create Workspace Route
         // POST /api/workspaces
         [Authorize]
@@ -34,6 +35,7 @@ namespace Shareables.API.Controllers
             _useCaseHandler.HandleCommand(cmd, dto);
             return StatusCode(201); 
         }
+
 
         // Update Workspace Route
         // PUT /api/workspaces/3
@@ -46,11 +48,17 @@ namespace Shareables.API.Controllers
             return NoContent();
         }
 
+
         // Delete Workspace Route
         // DELETE /api/workspaces/3
         [Authorize]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id) { return Ok(); }
+        public IActionResult Delete(int id, [FromBody] WorkspaceDto dto, [FromServices] IDeleteWorkspaceCommand cmd) 
+        { 
+            dto.Id = id; // dto should contain ParentId
+            _useCaseHandler.HandleCommand(cmd, dto);
+            return NoContent();
+        }
 
     }
 }

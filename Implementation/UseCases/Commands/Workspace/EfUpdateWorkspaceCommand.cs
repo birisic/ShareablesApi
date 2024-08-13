@@ -35,13 +35,11 @@ namespace Implementation.UseCases.Commands.Workspace
 
             if (workspaceToUpdate != null)
             {
-                if (workspaceToUpdate.Name != dto.Name)
+                if (workspaceToUpdate.Name != dto.Name) workspaceToUpdate.Name = dto.Name;
+
+                if (workspaceType == WorkspaceType.Document)
                 {
-                    workspaceToUpdate.Name = dto.Name;
-                }
-                if (workspaceToUpdate.Contents != dto.Contents)
-                {
-                    workspaceToUpdate.Contents = dto.Contents;
+                    if (workspaceToUpdate.Contents != dto.Contents) workspaceToUpdate.Contents = dto.Contents;
                 }
 
                 Context.SaveChanges();

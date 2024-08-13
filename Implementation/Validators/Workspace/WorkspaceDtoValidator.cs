@@ -29,14 +29,17 @@ namespace Implementation.Validators.Workspace
 
             CascadeMode = CascadeMode.StopOnFirstFailure;
 
-            RuleFor(dto => dto.Name).NotEmpty()
-                                    .Matches(@"^[a-zA-Z0-9\(\)!\-_'"";\s]*$")
-                                    .WithMessage("Name must contain only alphanumeric characters or special chars ('()!-_'\"') and be between 1-50 characters long.")
-                                    .Length(1, 50);
+            When(dto => UseCase != UseCasesEnum.WorkspaceDeletion, () =>
+            {
+                RuleFor(dto => dto.Name).NotEmpty()
+                        .Matches(@"^[a-zA-Z0-9\(\)!\-_'"";\s]*$")
+                        .WithMessage("Name must contain only alphanumeric characters or special chars ('()!-_'\"') and be between 1-50 characters long.")
+                        .Length(1, 50);
 
-            RuleFor(dto => dto.Type).NotEmpty()
-                                    .Must(t => Enum.IsDefined(typeof(WorkspaceType), t))
-                                    .WithMessage("Workspace type must be 'Workspace', 'Directory' or 'Document'.");
+                RuleFor(dto => dto.Type).NotEmpty()
+                        .Must(t => Enum.IsDefined(typeof(WorkspaceType), t))
+                        .WithMessage("Workspace type must be 'Workspace', 'Directory' or 'Document'.");
+            });
 
             /*
              * when can an actor create a workspace or directory or document?
@@ -47,15 +50,15 @@ namespace Implementation.Validators.Workspace
              */
 
             /* when can an actor update/delete a workspace or directory or document?
-             * Workspace - can delete any but the first one and only when they've no children workspaces
+             * Workspace - can delete any but they must have at least one left, and only when they've no children workspaces
              * Directory and Document - when the actor has usecaseIDs 2,3,5 (WorkspaceDeletion, WorkspaceRetrieval,
              * WorkspaceModification) for the provided workspace AND when they have the "WorkspaceRetrieval" usecase 
              * for all ancestor workspaces
              */
 
             RuleFor(dto => dto.ParentId)
-            .Must(ParentIdIsValid)
-            .WithMessage("Invalid workspace parent id.");
+                .Must(ParentIdIsValid)
+                .WithMessage("Invalid workspace parent id.");
 
             RuleFor(dto => dto)
                 .Must(dto => CanActorPerformAction(dto, UseCase))
@@ -76,18 +79,21 @@ namespace Implementation.Validators.Workspace
 
         private bool CanActorPerformAction(WorkspaceDto dto, UseCasesEnum useCase)
         {
-            //allow creating a new workspace of type 'Workspace' only if it doesn't have a parent (Workspaces must be root)
-            if (dto.Type == WorkspaceType.Workspace.ToString())
+            //allow creating/updating a workspace of type 'Workspace'
+            if (UseCase == UseCasesEnum.WorkspaceCreation || UseCase == UseCasesEnum.WorkspaceModification)
             {
-                return !dto.ParentId.HasValue;
+                if (dto.Type == WorkspaceType.Workspace.ToString())
+                {
+                    return !dto.ParentId.HasValue;
+                }
             }
 
-            int? workspaceId = dto.ParentId; //use parentid only for creating directories/documents
+            int? workspaceId = dto.ParentId; //use parentid for checking ancestor use cases
 
             if (useCase != UseCasesEnum.WorkspaceCreation)
             {
                 bool isTrueParent = _context.Workspaces.Any(w => w.Id == dto.Id && w.ParentId == dto.ParentId);
-
+                
                 if (!isTrueParent) return false;
 
                 workspaceId = dto.Id;
@@ -100,16 +106,16 @@ namespace Implementation.Validators.Workspace
 
             if (workspaceId.HasValue)
             {
-                // find the parent workspace
+                // find the workspace
                 var workspace = _context.Workspaces.FirstOrDefault(w => w.Id == workspaceId);
-                if (workspace == null) return false;
+                if (workspace == null || workspace.DeletedAt.HasValue) return false;
 
                 // Check if the actor has WorkspaceRetrieval use case for all ancestor workspaces (meaning if the actor can even see
                 // the workspace children in the tree structure on the UI)
                 bool theyHaveRetrievalUseCase = workspace.DoAncestorWorkspacesHaveRetrieavalUseCase(_context, _actor);
                 if (!theyHaveRetrievalUseCase) return false;
 
-                //allow the actor to create the workspace only if they have the parameter usecase for the parent workspace
+                //allow the actor to create/update/delete the workspace only if they have the parameter usecase
                 bool hasWorkspaceUseCase = _actor.WorkspacesUseCases.Any(wus =>
                                                 wus.WorkspaceId == workspaceId &&
                                                 wus.UseCaseIds.Contains((int) useCase));
