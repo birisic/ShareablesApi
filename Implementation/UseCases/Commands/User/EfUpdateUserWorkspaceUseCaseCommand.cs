@@ -15,7 +15,8 @@ namespace Implementation.UseCases.Commands.User
         public UseCasesEnum Name => UseCasesEnum.UserWorkspaceUseCaseModification;
         public UpdateUserWorkspaceUseCaseValidator _validator;
 
-        public EfUpdateUserWorkspaceUseCaseCommand(CustomContext context, UpdateUserWorkspaceUseCaseValidator validator) : base(context)
+        public EfUpdateUserWorkspaceUseCaseCommand(CustomContext context, UpdateUserWorkspaceUseCaseValidator validator) 
+            : base(context)
         {
             _validator = validator;
         }
@@ -36,7 +37,7 @@ namespace Implementation.UseCases.Commands.User
 
             if (dto.Action == UseCaseAction.Delete.ToString())
             {
-                UserWorkspace userWorkspace = new UserWorkspace
+                UserWorkspace userWorkspace = new()
                 {
                     UserId = dto.UserId,
                     WorkspaceId = dto.WorkspaceId,

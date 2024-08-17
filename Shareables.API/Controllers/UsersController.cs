@@ -32,7 +32,7 @@ namespace Shareables.API.Controllers
         }
 
 
-        //Update/Store usecases route 
+        //Store/delete user usecases route 
         //POST api/users/usecases
         [HttpPost("usecases")]
         public IActionResult UpdateUseCase([FromBody] UserWorkspaceUseCaseDto dto, [FromServices] IUpdateUserWorkspaceUseCaseCommand cmd)
