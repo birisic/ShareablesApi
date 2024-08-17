@@ -1,10 +1,9 @@
 ﻿using FluentValidation;
-using Application.DTO.Workspace;
 using Application.DTO.User;
 using DataAccess;
 using Application;
 using Domain;
-using Implementation.UseCases;
+using Application.DTO.Workspace;
 
 namespace Implementation.Validators.User
 {
@@ -87,13 +86,23 @@ namespace Implementation.Validators.User
 
             if (workspace == null) return false;
 
-            var ancestorWorkspaces = GetAncestorWorkspaces(workspace);
+            List<Domain.Workspace> ancestorWorkspaces = GetAncestorWorkspaces(workspace);
+            Domain.User targetUser = _context.Users.FirstOrDefault(u => u.Id == dto.UserId);
 
-            // Find ancestors where the actor does not have WorkspaceRetrieval use case
-            var ancestorWorkspacesWithoutRetrievalUseCase = ancestorWorkspaces
-                .Where(ancestor => !_actor.WorkspacesUseCases
-                    .Any(wus => wus.WorkspaceId == ancestor.Id && wus.UseCaseIds.Contains((int)UseCasesEnum.WorkspaceRetrieval)))
-                .ToList();
+            IEnumerable<int> idsOfAncestorsWithRetrievalUseCase = ancestorWorkspaces.Where(w => targetUser.UsersWorkspaces
+                                                                                            .Any(uw => uw.WorkspaceId == w.Id &&
+                                                                                            uw.UseCaseId == (int) UseCasesEnum.WorkspaceRetrieval))
+                                                                                        .Select(w => w.Id)
+                                                                                        .ToList();
+
+            List<int> idsOfAncestorsWithoutRetrievalUseCase = [];
+            foreach (var ancestor in ancestorWorkspaces)
+            {
+                if (!idsOfAncestorsWithRetrievalUseCase.Contains(ancestor.Id))
+                {
+                    idsOfAncestorsWithoutRetrievalUseCase.Add(ancestor.Id);
+                }
+            }
 
             if (dto.UseCaseId != (int)UseCasesEnum.WorkspaceRetrieval)
             {
@@ -101,22 +110,27 @@ namespace Implementation.Validators.User
                 // the WorkspaceRetrieval UseCase, then the action is not allowed
                 // Otherwise, since you've already confirmed with the rules that the user has the UseCase for this workspace,
                 // just allow them to perform the action
-                return ancestorWorkspacesWithoutRetrievalUseCase.Count == 0;
+                return idsOfAncestorsWithoutRetrievalUseCase.Count > 0;
             }
             else
             {
                 if (dto.Action == UseCaseAction.Store.ToString())
                 {
-                    var userWorkspacesToAdd = new List<UserWorkspace>();
+                    List<UserWorkspace> userWorkspacesToAdd = [];
 
                     // Grant WorkspaceRetrieval for missing ancestors if the action is to grant it
-                    foreach (var ancestor in ancestorWorkspacesWithoutRetrievalUseCase)
+                    foreach (var ancestorId in idsOfAncestorsWithoutRetrievalUseCase)
                     {
-                        userWorkspacesToAdd.Add(CreateWorkspaceWithRetrievalUseCase(ancestor, dto.UserId));
+                        userWorkspacesToAdd.Add(CreateWorkspaceWithRetrievalUseCase(ancestorId, dto.UserId));
                     }
 
                     _context.UsersWorkspaces.AddRange(userWorkspacesToAdd);
                     _context.SaveChanges();
+                }
+
+                if (dto.Action == UseCaseAction.Delete.ToString())
+                {
+                    // cascade remove all UseCases down from all children?
                 }
             }
 
@@ -146,11 +160,11 @@ namespace Implementation.Validators.User
             return ancestors;
         }
 
-        private static UserWorkspace CreateWorkspaceWithRetrievalUseCase(Domain.Workspace workspace, int userId)
+        private static UserWorkspace CreateWorkspaceWithRetrievalUseCase(int workspaceId, int userId)
         {
             return new()
             {
-                WorkspaceId = workspace.Id,
+                WorkspaceId = workspaceId,
                 UserId = userId,
                 UseCaseId = (int)UseCasesEnum.WorkspaceRetrieval
             };
