@@ -4,6 +4,7 @@ using DataAccess;
 using Application;
 using Domain;
 using Application.DTO.Workspace;
+using Microsoft.EntityFrameworkCore;
 
 namespace Implementation.Validators.User
 {
@@ -64,7 +65,9 @@ namespace Implementation.Validators.User
                                         .Any(uw => uw.WorkspaceId == dto.WorkspaceId && uw.UseCaseId == dto.UseCaseId))
                     .WithMessage("Couldn't remove the user's privilege from the provided workspace " +
                         "since the user doesn't already have the provided privilege.")
-                    .Must(dto => CanUpdateUseCase(dto));
+                    .Must(dto => CanUpdateUseCase(dto))
+                    .WithMessage("You don't have the permission to perform this action.");
+
             });
 
             When(dto => dto.Action == UseCaseAction.Store.ToString(), () =>
@@ -76,7 +79,9 @@ namespace Implementation.Validators.User
                                         .Any(uw => uw.WorkspaceId == dto.WorkspaceId && uw.UseCaseId == dto.UseCaseId))
                     .WithMessage("Couldn't add the user's privilege to the provided workspace " +
                         "since the user already has the provided privilege.")
-                    .Must(dto => CanUpdateUseCase(dto));
+                    .Must(dto => CanUpdateUseCase(dto))
+                    .WithMessage("You don't have the permission to perform this action.");
+
             });
         }
 
@@ -87,7 +92,8 @@ namespace Implementation.Validators.User
             if (workspace == null) return false;
 
             List<Domain.Workspace> ancestorWorkspaces = GetAncestorWorkspaces(workspace);
-            Domain.User targetUser = _context.Users.FirstOrDefault(u => u.Id == dto.UserId);
+            Domain.User targetUser = _context.Users.Include(u => u.UsersWorkspaces) //eager load UseCases
+                                                   .FirstOrDefault(u => u.Id == dto.UserId);
 
             IEnumerable<int> idsOfAncestorsWithRetrievalUseCase = ancestorWorkspaces.Where(w => targetUser.UsersWorkspaces
                                                                                             .Any(uw => uw.WorkspaceId == w.Id &&
@@ -95,14 +101,10 @@ namespace Implementation.Validators.User
                                                                                         .Select(w => w.Id)
                                                                                         .ToList();
 
-            List<int> idsOfAncestorsWithoutRetrievalUseCase = [];
-            foreach (var ancestor in ancestorWorkspaces)
-            {
-                if (!idsOfAncestorsWithRetrievalUseCase.Contains(ancestor.Id))
-                {
-                    idsOfAncestorsWithoutRetrievalUseCase.Add(ancestor.Id);
-                }
-            }
+            List<int> idsOfAncestorsWithoutRetrievalUseCase =
+                            ancestorWorkspaces.Where(a => !idsOfAncestorsWithRetrievalUseCase.Contains(a.Id))
+                                              .Select(a => a.Id)
+                                              .ToList();
 
             if (dto.UseCaseId != (int)UseCasesEnum.WorkspaceRetrieval)
             {
@@ -110,7 +112,7 @@ namespace Implementation.Validators.User
                 // the WorkspaceRetrieval UseCase, then the action is not allowed
                 // Otherwise, since you've already confirmed with the rules that the user has the UseCase for this workspace,
                 // just allow them to perform the action
-                return idsOfAncestorsWithoutRetrievalUseCase.Count > 0;
+                return idsOfAncestorsWithoutRetrievalUseCase.Count == 0;
             }
             else
             {
@@ -125,12 +127,12 @@ namespace Implementation.Validators.User
                     }
 
                     _context.UsersWorkspaces.AddRange(userWorkspacesToAdd);
-                    _context.SaveChanges();
+                    _context.SaveChanges(); // this can maybe be removed
                 }
 
                 if (dto.Action == UseCaseAction.Delete.ToString())
                 {
-                    // cascade remove all UseCases down from all children?
+                    // cascade revoke all UseCases down from all children
                 }
             }
 
