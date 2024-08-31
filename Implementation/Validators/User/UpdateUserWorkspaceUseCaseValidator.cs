@@ -118,25 +118,70 @@ namespace Implementation.Validators.User
             {
                 if (dto.Action == UseCaseAction.Store.ToString())
                 {
-                    List<UserWorkspace> userWorkspacesToAdd = [];
-
-                    // Grant WorkspaceRetrieval for missing ancestors if the action is to grant it
-                    foreach (var ancestorId in idsOfAncestorsWithoutRetrievalUseCase)
-                    {
-                        userWorkspacesToAdd.Add(CreateWorkspaceWithRetrievalUseCase(ancestorId, dto.UserId));
-                    }
-
-                    _context.UsersWorkspaces.AddRange(userWorkspacesToAdd);
-                    _context.SaveChanges(); // this can maybe be removed
+                    AddRetrievalUseCaseToAncestors(idsOfAncestorsWithoutRetrievalUseCase, dto.UserId);
                 }
 
                 if (dto.Action == UseCaseAction.Delete.ToString())
                 {
-                    // cascade revoke all UseCases down from all children
+                    // cascade revoke all UseCases from this Workspace and down from all its children
+
+                    // this will have to be done in some recursive manner to get the grandchildren as well
+                    //List<Domain.Workspace> childWorkspaces = [.. workspace.Children];
+
+                    //foreach (var child in childWorkspaces)
+                    //{
+                    //    List<UserWorkspace> privileges = [.. child.UsersWorkspaces];
+
+                    //    //_context.RemoveRange(privileges);
+                    //}
+
+                    RevokeUseCasesFromDescendants(workspace, dto.UserId);
                 }
             }
 
             return true;
+        }
+
+        // MAKE THIS INTO EXTENSION METHODS
+        private void RevokeUseCasesFromDescendants(Domain.Workspace workspace, int userId)
+        {
+            List<Domain.Workspace> descendants = GetAllDescendantWorkspaces(workspace);
+
+            foreach (var descendant in descendants)
+            {
+                var useCasesToRemove = descendant.UsersWorkspaces.Where(uw => uw.UserId == userId).ToList();
+                _context.UsersWorkspaces.RemoveRange(useCasesToRemove);
+            }
+
+            _context.SaveChanges();
+        }
+
+        private List<Domain.Workspace> GetAllDescendantWorkspaces(Domain.Workspace workspace)
+        {
+            var descendants = new List<Domain.Workspace>();
+            List<Domain.Workspace> children = [.. workspace.Children];
+
+            foreach (var child in children)
+            {
+                descendants.Add(child);
+                descendants.AddRange(GetAllDescendantWorkspaces(child)); // Recursively add all descendants
+            }
+
+            return descendants;
+        }
+
+        private void AddRetrievalUseCaseToAncestors(List<int> ancestors, int userId)
+        {
+            List<UserWorkspace> userWorkspacesToAdd = [];
+
+            // Grant WorkspaceRetrieval for missing ancestors if the action is to grant it
+            foreach (var ancestorId in ancestors)
+            {
+                userWorkspacesToAdd.Add(CreateWorkspaceWithRetrievalUseCase(ancestorId, userId));
+            }
+
+            _context.UsersWorkspaces.AddRange(userWorkspacesToAdd);
+            _context.SaveChanges(); // this can maybe be removed
         }
 
         private List<Domain.Workspace> GetAncestorWorkspaces(Domain.Workspace workspace)
@@ -148,15 +193,13 @@ namespace Implementation.Validators.User
             while (current.ParentId.HasValue)
             {
                 var parent = _context.Workspaces.FirstOrDefault(w => w.Id == current.ParentId);
-                if (parent != null)
-                {
-                    ancestors.Add(parent);
-                    current = parent;
-                }
-                else
+                if (parent == null)
                 {
                     break;
                 }
+
+                ancestors.Add(parent);
+                current = parent;
             }
 
             return ancestors;
