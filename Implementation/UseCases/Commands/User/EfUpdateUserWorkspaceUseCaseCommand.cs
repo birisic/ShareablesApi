@@ -5,6 +5,7 @@ using DataAccess;
 using Domain;
 using FluentValidation;
 using Implementation.Validators.User;
+using Microsoft.EntityFrameworkCore;
 
 namespace Implementation.UseCases.Commands.User
 {
@@ -34,7 +35,7 @@ namespace Implementation.UseCases.Commands.User
                 });
             }
 
-            if (dto.Action == UseCaseAction.Delete.ToString())
+            if (dto.Action == UseCaseAction.Destroy.ToString())
             {
                 UserWorkspace userWorkspace = new()
                 {
@@ -43,8 +44,20 @@ namespace Implementation.UseCases.Commands.User
                     UseCaseId = dto.UseCaseId
                 };
 
-                Context.UsersWorkspaces.Attach(userWorkspace);
-                Context.UsersWorkspaces.Remove(userWorkspace);
+                // if it's a WorkspaceRetrieval UseCase, remove other UseCases as well for this Workspace
+                if (dto.UseCaseId != (int) UseCasesEnum.WorkspaceRetrieval)
+                {
+                    Context.UsersWorkspaces.Attach(userWorkspace);
+                    Context.UsersWorkspaces.Remove(userWorkspace);
+                }
+                else
+                {
+                    var userWorkspacesToRemove = Context.UsersWorkspaces.Where(uw => uw.UserId == dto.UserId 
+                                                                            && uw.WorkspaceId == dto.WorkspaceId)
+                                                                        .ToList();
+
+                    Context.UsersWorkspaces.RemoveRange(userWorkspacesToRemove);
+                }
             }
 
             Context.SaveChanges();

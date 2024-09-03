@@ -44,7 +44,7 @@ namespace Shareables.API.Controllers
                 return StatusCode(201);
             }
 
-            if (dto.Action == UseCaseAction.Delete.ToString())
+            if (dto.Action == UseCaseAction.Destroy.ToString())
             {
                 return NoContent();
             }

@@ -54,9 +54,9 @@ namespace Implementation.Validators.User
                             .NotEmpty()
                             .WithMessage("Action type cannot be empty.")
                             .Must(action => Enum.IsDefined(typeof(UseCaseAction), action))
-                            .WithMessage("Action type must be either 'Store' or 'Delete'.");
+                            .WithMessage("Action type must be either 'Store' or 'Destroy'.");
 
-            When(dto => dto.Action == UseCaseAction.Delete.ToString(), () =>
+            When(dto => dto.Action == UseCaseAction.Destroy.ToString(), () =>
             {
                 RuleFor(dto => dto)
                     .Must(dto => context.Users
@@ -87,7 +87,8 @@ namespace Implementation.Validators.User
 
         public bool CanUpdateUseCase(UserWorkspaceUseCaseDto dto)
         {
-            Domain.Workspace workspace = _context.Workspaces.FirstOrDefault(w => w.Id == dto.WorkspaceId);
+            Domain.Workspace workspace = _context.Workspaces.Include(w => w.Children)
+                                                            .FirstOrDefault(w => w.Id == dto.WorkspaceId);
 
             if (workspace == null) return false;
 
@@ -121,20 +122,9 @@ namespace Implementation.Validators.User
                     AddRetrievalUseCaseToAncestors(idsOfAncestorsWithoutRetrievalUseCase, dto.UserId);
                 }
 
-                if (dto.Action == UseCaseAction.Delete.ToString())
+                if (dto.Action == UseCaseAction.Destroy.ToString())
                 {
-                    // cascade revoke all UseCases from this Workspace and down from all its children
-
-                    // this will have to be done in some recursive manner to get the grandchildren as well
-                    //List<Domain.Workspace> childWorkspaces = [.. workspace.Children];
-
-                    //foreach (var child in childWorkspaces)
-                    //{
-                    //    List<UserWorkspace> privileges = [.. child.UsersWorkspaces];
-
-                    //    //_context.RemoveRange(privileges);
-                    //}
-
+                    // cascade revoke all UseCases from this Workspace's children
                     RevokeUseCasesFromDescendants(workspace, dto.UserId);
                 }
             }
@@ -142,7 +132,6 @@ namespace Implementation.Validators.User
             return true;
         }
 
-        // MAKE THIS INTO EXTENSION METHODS
         private void RevokeUseCasesFromDescendants(Domain.Workspace workspace, int userId)
         {
             List<Domain.Workspace> descendants = GetAllDescendantWorkspaces(workspace);
@@ -164,7 +153,7 @@ namespace Implementation.Validators.User
             foreach (var child in children)
             {
                 descendants.Add(child);
-                descendants.AddRange(GetAllDescendantWorkspaces(child)); // Recursively add all descendants
+                descendants.AddRange(GetAllDescendantWorkspaces(child));
             }
 
             return descendants;

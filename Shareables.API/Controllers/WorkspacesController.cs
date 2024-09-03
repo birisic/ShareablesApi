@@ -49,7 +49,7 @@ namespace Shareables.API.Controllers
         }
 
 
-        // Delete Workspace Route
+        // Destroy Workspace Route
         // DELETE /api/workspaces/3
         [Authorize]
         [HttpDelete("{id}")]

@@ -15,6 +15,6 @@ namespace Application.DTO.User
     public enum UseCaseAction
     {
         Store,
-        Delete
+        Destroy
     }
 }
