@@ -7,6 +7,6 @@ namespace Domain
     public class Media : NamedEntity
     {
         public string Path { get; set; }
-        public virtual ICollection<Workspace> Workspaces { get; set; } = new List<Workspace>();
+        public virtual ICollection<WorkspacesMedia> WorkspacesMedia { get; set; } = new List<WorkspacesMedia>();
     }
 }

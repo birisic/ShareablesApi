@@ -8,5 +8,6 @@
         WorkspaceCreation = 4, //create workspace
         WorkspaceModification = 5, //update document contents, or any workspace's owner or parent
         UserWorkspaceUseCaseModification = 6, //update user usecase for a workspace
+        WorkspaceRetrievalByLink = 7, //get workspace name and contents by link
     }
 }

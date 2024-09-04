@@ -37,7 +37,7 @@ namespace Implementation
         private void HandleCrossCuttingConcerns(IUseCase useCase, object data)
         {
             //Autorizacija
-            if (!_actor.WorkspacesUseCases.Any(wus => wus.UseCaseIds.Contains(useCase.Id)))
+            if (!_actor.WorkspacesUseCases.Any(wus => wus.UseCaseIds.Contains(useCase.Id)) && useCase.Name != UseCasesEnum.WorkspaceRetrievalByLink)
             {
                 throw new UnauthorizedAccessException();
             }

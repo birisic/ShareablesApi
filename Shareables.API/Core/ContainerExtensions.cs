@@ -2,6 +2,7 @@
 using Application.UseCases.Commands.User;
 using Application.UseCases.Commands.Workspace;
 using Application.UseCases.Queries.User;
+using Application.UseCases.Queries.Workspace;
 using Implementation;
 using Implementation.Logging;
 using Implementation.UseCases.Commands.User;
@@ -23,6 +24,7 @@ namespace Shareables.API.Core
 
             //queries
             services.AddTransient<IGetWorkspaceQuery, EfGetWorkspaceQuery>();
+            services.AddTransient<IGetWorkspaceByLinkQuery, EfGetWorkspaceByLinkQuery>();
 
             //commands
             services.AddTransient<IRegisterUserCommand, EfRegisterUserCommand>();

@@ -56,6 +56,19 @@ namespace Implementation.Validators.Workspace
              * for all ancestor workspaces
              */
 
+
+            When(dto => dto.Type == WorkspaceType.Document.ToString(), () =>
+            {
+                RuleFor(dto => dto.Images)
+                .Must(images => images == null
+                || images.All(fileName =>
+                {
+                    var path = Path.Combine("wwwroot", "temp", fileName);
+                    return File.Exists(path);
+                }))
+                .WithMessage("One or more files do not exist in the temporary folder.");
+            });
+
             RuleFor(dto => dto.ParentId)
                 .Must(ParentIdIsValid)
                 .WithMessage("Invalid workspace parent id.");

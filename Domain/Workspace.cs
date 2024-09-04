@@ -15,7 +15,7 @@ namespace Domain
         public virtual User Owner { get; set; }
         public virtual Workspace Parent { get; set; }
         public virtual ICollection<Workspace> Children { get; set; } = new List<Workspace>();
-        public virtual ICollection<Media> Media { get; set; } = new List<Media>();
+        public virtual ICollection<WorkspacesMedia> WorkspacesMedia { get; set; } = new List<WorkspacesMedia>();
         public virtual ICollection<UserWorkspace> UsersWorkspaces { get; set; } = new List<UserWorkspace>();
         public virtual ICollection<Link> Links { get; set; } = new List<Link>();
     }

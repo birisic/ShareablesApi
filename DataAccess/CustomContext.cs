@@ -35,6 +35,9 @@ namespace DataAccess
             modelBuilder.Entity<UserWorkspace>()
                         .HasKey(uw => new { uw.UserId, uw.WorkspaceId, uw.UseCaseId });
 
+            modelBuilder.Entity<WorkspacesMedia>()
+                        .HasKey(wm => new { wm.WorkspaceId, wm.MediaId });
+
             modelBuilder.Entity<LinkAccessLog>()
                 .HasOne(e => e.Link)
                 .WithOne(e => e.AccessLog)
@@ -75,6 +78,7 @@ namespace DataAccess
         public DbSet<UseCaseLog> UseCaseLogs { get; set; }
         public DbSet<Workspace> Workspaces { get; set; }
         public DbSet<UserWorkspace> UsersWorkspaces { get; set; }
+        public DbSet<WorkspacesMedia> WorkspacesMedia { get; set; }
         public DbSet<Link> Links { get; set; }
         public DbSet<LinkAccessLog> LinksAccessLogs { get; set; }
     }

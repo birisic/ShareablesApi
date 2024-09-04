@@ -1,7 +1,4 @@
-﻿using Domain;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Application.DTO.Workspace
 {
@@ -12,5 +9,6 @@ namespace Application.DTO.Workspace
         public string Type { get; set; }
         public string Contents { get; set; }
         public int? ParentId { get; set; }
+        public IEnumerable<string> Images { get; set; }
     }
 }
