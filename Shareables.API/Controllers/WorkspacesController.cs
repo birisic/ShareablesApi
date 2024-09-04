@@ -8,8 +8,6 @@ using Domain;
 using Implementation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Shareables.API.Controllers
 {
@@ -26,49 +24,6 @@ namespace Shareables.API.Controllers
             _useCaseHandler = handler;
             _context = context;
             _actor = actor;
-        }
-
-
-        // Create Workspace Link Route
-        // POST /api/workspaces/link/7
-        [Authorize]
-        [HttpPost("link/{workspaceId}")]
-        public IActionResult Post(int workspaceId)
-        {
-            var workspace = _context.Workspaces.Find(workspaceId);
-
-            if (workspace == null || workspace.Type != WorkspaceType.Document) 
-                return NotFound(new { message = "Document not found." });
-
-            if (workspace.OwnerId != _actor.Id)
-                return Forbid("Couldn't create a link for the provided workspace id.");
-
-            if (workspace.Links.Any(l => l.Expires_at > DateTime.UtcNow))
-                return Forbid("Couldn't create a link for the provided workspace because an active link already exists.");
-
-            var token = GenerateRandomString(150);
-
-            var link = new Link
-            {
-                Token = token,
-                DocumentId = workspaceId,
-                Expires_at = DateTime.UtcNow.AddMinutes(3)
-            };
-
-            _context.Links.Add(link);
-            _context.SaveChanges();
-
-            var linkUrl = $"{Request.Scheme}://{Request.Host}/api/workspaces/links/{token}";
-
-            return StatusCode(201, new { link = linkUrl });
-        }
-
-        public string GenerateRandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
 
@@ -121,5 +76,47 @@ namespace Shareables.API.Controllers
             return NoContent();
         }
 
+
+        // Create Workspace Link Route
+        // POST /api/workspaces/link/7
+        [Authorize]
+        [HttpPost("link/{workspaceId}")]
+        public IActionResult Post(int workspaceId)
+        {
+            var workspace = _context.Workspaces.Find(workspaceId);
+
+            if (workspace == null || workspace.Type != WorkspaceType.Document)
+                return NotFound(new { message = "Document not found." });
+
+            if (workspace.OwnerId != _actor.Id)
+                return Forbid("Couldn't create a link for the provided workspace id.");
+
+            if (workspace.Links.Any(l => l.Expires_at > DateTime.UtcNow))
+                return Forbid("Couldn't create a link for the provided workspace because an active link already exists.");
+
+            var token = GenerateRandomString(150);
+
+            var link = new Link
+            {
+                Token = token,
+                DocumentId = workspaceId,
+                Expires_at = DateTime.UtcNow.AddMinutes(3)
+            };
+
+            _context.Links.Add(link);
+            _context.SaveChanges();
+
+            var linkUrl = $"{Request.Scheme}://{Request.Host}/api/workspaces/links/{token}";
+
+            return StatusCode(201, new { link = linkUrl });
+        }
+
+        public string GenerateRandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
     }
 }
