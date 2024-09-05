@@ -4,6 +4,7 @@ using Application.Exceptions;
 using Application.UseCases.Queries.User;
 using DataAccess;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 namespace Implementation.UseCases.Queries.Workspace
 {
@@ -26,7 +27,9 @@ namespace Implementation.UseCases.Queries.Workspace
             }
 
             // check if the workspace with that ID actually exists
-            Domain.Workspace workspace = Context.Workspaces.FirstOrDefault(w => w.Id == workspaceId); 
+            Domain.Workspace workspace = Context.Workspaces.Include(w => w.WorkspacesMedia)
+                                                            .ThenInclude(wm => wm.Media)
+                                                            .FirstOrDefault(w => w.Id == workspaceId); 
             if (workspace == null)
             {
                 throw new EntityNotFoundException(nameof(Domain.Workspace), workspaceId);
@@ -49,6 +52,7 @@ namespace Implementation.UseCases.Queries.Workspace
                 Contents = workspace.Contents,
                 OwnerId = workspace.OwnerId,
                 ParentId = workspace.ParentId,
+                Images = workspace.WorkspacesMedia.Select(wm => wm.Media.Path).ToList(),
             };
         }
     }

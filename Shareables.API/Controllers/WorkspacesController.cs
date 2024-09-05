@@ -13,18 +13,11 @@ namespace Shareables.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WorkspacesController : ControllerBase
+    public class WorkspacesController(UseCaseHandler handler, CustomContext context, IApplicationActor actor) : ControllerBase
     {
-        public UseCaseHandler _useCaseHandler;
-        public CustomContext _context;
-        public IApplicationActor _actor;
-
-        public WorkspacesController(UseCaseHandler handler, CustomContext context, IApplicationActor actor)
-        {
-            _useCaseHandler = handler;
-            _context = context;
-            _actor = actor;
-        }
+        public UseCaseHandler _useCaseHandler = handler;
+        public CustomContext _context = context;
+        public IApplicationActor _actor = actor;
 
 
         // Get Workspace Via Link Route

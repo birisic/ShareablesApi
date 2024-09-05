@@ -6,6 +6,7 @@ using DataAccess;
 using FluentValidation;
 using Implementation.Validators.Workspace;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 namespace Implementation.UseCases.Commands.Workspace
 {
@@ -27,7 +28,7 @@ namespace Implementation.UseCases.Commands.Workspace
         {
             _validator.ValidateAndThrow(dto);
 
-            var workspaceToDelete = Context.Workspaces.FirstOrDefault(w => w.Id == dto.Id) ??
+            var workspaceToDelete = Context.Workspaces.Include(w => w.Children).FirstOrDefault(w => w.Id == dto.Id) ??
                 throw new EntityNotFoundException(nameof(Workspace), dto.Id ?? 0);
 
             if (workspaceToDelete.Children.Count > 0)
